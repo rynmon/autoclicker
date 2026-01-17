@@ -86,37 +86,49 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-          pattern: '*'
-          merge-multiple: false
 
       - name: List downloaded artifacts
         run: |
-          echo "Artifacts directory contents:"
-          ls -la ./artifacts/ || echo "Artifacts directory not found"
-          find ./artifacts -type f || echo "No files found"
-          echo "Looking for executables:"
-          find ./artifacts -name "autoclicker*" -type f || echo "No executables found"
+          echo "=== Artifacts directory structure ==="
+          find ./artifacts -type f -o -type d | head -20
+          echo ""
+          echo "=== Looking for executables ==="
+          find ./artifacts -name "autoclicker*" -type f
+          echo ""
+          echo "=== All files in artifacts ==="
+          find ./artifacts -type f
 
       - name: Prepare release files
         run: |
           mkdir -p ./release-files
-          # Copy files from artifact subdirectories to a flat structure
-          if [ -f "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ]; then
-            cp "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ./release-files/
-          fi
-          if [ -f "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ]; then
-            cp "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ./release-files/
-          fi
-          if [ -f "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ]; then
-            cp "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ./release-files/
-          fi
-          if [ -f "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ]; then
-            cp "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ./release-files/
-          fi
+          
+          # Find and copy all autoclicker executables
+          find ./artifacts -type f -name "autoclicker*" -exec cp {} ./release-files/ \;
+          
           # Make Linux/macOS binaries executable
           chmod +x ./release-files/autoclicker-* || true
-          echo "Release files prepared:"
+          
+          echo "=== Release files prepared ==="
           ls -lh ./release-files/
+          
+          # Verify files exist
+          if [ ! -f "./release-files/autoclicker-windows-x86_64.exe" ]; then
+            echo "ERROR: Windows executable not found!"
+            exit 1
+          fi
+          if [ ! -f "./release-files/autoclicker-macos-x86_64" ]; then
+            echo "ERROR: macOS Intel executable not found!"
+            exit 1
+          fi
+          if [ ! -f "./release-files/autoclicker-macos-aarch64" ]; then
+            echo "ERROR: macOS ARM executable not found!"
+            exit 1
+          fi
+          if [ ! -f "./release-files/autoclicker-linux-x86_64" ]; then
+            echo "ERROR: Linux executable not found!"
+            exit 1
+          fi
+          echo "All executables found and ready!"
 
       - name: Get tag name
         id: tag
@@ -125,7 +137,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./release-files/*
+          files: |
+            ./release-files/autoclicker-windows-x86_64.exe
+            ./release-files/autoclicker-macos-x86_64
+            ./release-files/autoclicker-macos-aarch64
+            ./release-files/autoclicker-linux-x86_64
           name: Release ${{ steps.tag.outputs.TAG_NAME }}
           body: |
             ## Features
