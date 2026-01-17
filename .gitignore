@@ -5,6 +5,7 @@ Cargo.lock
 
 # Build artifacts
 icon.ico
+icon.png
 *.exe
 *.pdb
 

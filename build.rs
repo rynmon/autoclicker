@@ -90,6 +90,14 @@ fn main() {
                     }
                 }
             }
+            
+            // Also save as PNG for eframe window icon
+            let png_path = "icon.png";
+            if let Ok(mut png_file) = std::fs::File::create(png_path) {
+                if let Err(e) = img.write_to(&mut png_file, ImageFormat::Png) {
+                    eprintln!("Warning: Could not write PNG icon file: {}", e);
+                }
+            }
         }
         
         // On non-Windows hosts building for Windows, just skip icon generation

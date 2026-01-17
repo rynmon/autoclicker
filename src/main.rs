@@ -154,10 +154,23 @@ impl eframe::App for AutoClickerApp {
 }
 
 fn main() -> Result<(), eframe::Error> {
+    // Try to load icon for window
+    let icon = if let Ok(icon_data) = std::fs::read("icon.png") {
+        eframe::icon_data::from_png_bytes(&icon_data)
+    } else {
+        None
+    };
+    
+    let mut viewport = egui::ViewportBuilder::default()
+        .with_inner_size([350.0, 320.0])
+        .with_resizable(true);
+    
+    if let Some(icon_data) = icon {
+        viewport = viewport.with_icon(icon_data);
+    }
+    
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([350.0, 320.0])
-            .with_resizable(true),
+        viewport,
         ..Default::default()
     };
     
