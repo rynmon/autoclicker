@@ -6,6 +6,12 @@ use device_query::{DeviceQuery, DeviceState, Keycode};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+#[cfg(windows)]
+const ICON_DATA: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/icon.png"));
+
+#[cfg(not(windows))]
+const ICON_DATA: &[u8] = &[];
+
 struct AutoClickerApp {
     clicking: Arc<Mutex<bool>>,
     cps: Arc<Mutex<u32>>, // clicks per second
@@ -154,9 +160,9 @@ impl eframe::App for AutoClickerApp {
 }
 
 fn main() -> Result<(), eframe::Error> {
-    // Try to load icon for window
-    let icon = if let Ok(icon_data) = std::fs::read("icon.png") {
-        eframe::icon_data::from_png_bytes(&icon_data)
+    // Load embedded icon for window
+    let icon = if !ICON_DATA.is_empty() {
+        eframe::icon_data::from_png_bytes(ICON_DATA).ok()
     } else {
         None
     };

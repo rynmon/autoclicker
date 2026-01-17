@@ -91,11 +91,34 @@ fn main() {
                 }
             }
             
-            // Also save as PNG for eframe window icon
+            // Also save as PNG for eframe window icon (embedded in code)
             let png_path = "icon.png";
             if let Ok(mut png_file) = std::fs::File::create(png_path) {
                 if let Err(e) = img.write_to(&mut png_file, ImageFormat::Png) {
                     eprintln!("Warning: Could not write PNG icon file: {}", e);
+                }
+            }
+            
+            // Generate icon data file for embedding
+            let icon_bytes = {
+                let mut png_data = Vec::new();
+                let mut cursor = std::io::Cursor::new(&mut png_data);
+                if img.write_to(&mut cursor, ImageFormat::Png).is_ok() {
+                    png_data
+                } else {
+                    Vec::new()
+                }
+            };
+            
+            if !icon_bytes.is_empty() {
+                // Write to OUT_DIR so it can be included
+                let out_dir = std::env::var("OUT_DIR").unwrap();
+                let icon_png_path = std::path::Path::new(&out_dir).join("icon.png");
+                if let Err(e) = std::fs::write(&icon_png_path, &icon_bytes) {
+                    eprintln!("Warning: Could not write icon.png to OUT_DIR: {}", e);
+                } else {
+                    // Tell Cargo to rerun if icon.png changes
+                    println!("cargo:rerun-if-changed=icon.png");
                 }
             }
         }
