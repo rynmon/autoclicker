@@ -1,0 +1,15 @@
+[package]
+name = "autoclicker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+device_query = "4.0.1"
+eframe = "0.27"
+egui = "0.27"
+enigo = "0.2"
+image = "0.25.9"
+
+[build-dependencies]
+image = "0.25.9"
+winres = "0.1.12"
