@@ -94,6 +94,29 @@ jobs:
           echo "Artifacts directory contents:"
           ls -la ./artifacts/ || echo "Artifacts directory not found"
           find ./artifacts -type f || echo "No files found"
+          echo "Looking for executables:"
+          find ./artifacts -name "autoclicker*" -type f || echo "No executables found"
+
+      - name: Prepare release files
+        run: |
+          mkdir -p ./release-files
+          # Copy files from artifact subdirectories to a flat structure
+          if [ -f "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ]; then
+            cp "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ./release-files/
+          fi
+          if [ -f "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ]; then
+            cp "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ./release-files/
+          fi
+          if [ -f "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ]; then
+            cp "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ./release-files/
+          fi
+          if [ -f "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ]; then
+            cp "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ./release-files/
+          fi
+          # Make Linux/macOS binaries executable
+          chmod +x ./release-files/autoclicker-* || true
+          echo "Release files prepared:"
+          ls -lh ./release-files/
 
       - name: Get tag name
         id: tag
@@ -102,11 +125,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            ./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe
-            ./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64
-            ./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64
-            ./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64
+          files: ./release-files/*
           name: Release ${{ steps.tag.outputs.TAG_NAME }}
           body: |
             ## Features
