@@ -102,33 +102,48 @@ jobs:
         run: |
           mkdir -p ./release-files
           
-          # Find and copy all autoclicker executables
-          find ./artifacts -type f -name "autoclicker*" -exec cp {} ./release-files/ \;
+          # Copy each executable with its proper name
+          # Windows
+          if [ -f "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ]; then
+            cp "./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe" ./release-files/
+          elif [ -f "./artifacts/autoclicker-windows-x86_64.exe/autoclicker.exe" ]; then
+            cp "./artifacts/autoclicker-windows-x86_64.exe/autoclicker.exe" ./release-files/autoclicker-windows-x86_64.exe
+          fi
+          
+          # macOS Intel
+          if [ -f "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ]; then
+            cp "./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64" ./release-files/
+          elif [ -f "./artifacts/autoclicker-macos-x86_64/autoclicker" ]; then
+            cp "./artifacts/autoclicker-macos-x86_64/autoclicker" ./release-files/autoclicker-macos-x86_64
+          fi
+          
+          # macOS ARM
+          if [ -f "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ]; then
+            cp "./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64" ./release-files/
+          elif [ -f "./artifacts/autoclicker-macos-aarch64/autoclicker" ]; then
+            cp "./artifacts/autoclicker-macos-aarch64/autoclicker" ./release-files/autoclicker-macos-aarch64
+          fi
+          
+          # Linux
+          if [ -f "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ]; then
+            cp "./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64" ./release-files/
+          elif [ -f "./artifacts/autoclicker-linux-x86_64/autoclicker" ]; then
+            cp "./artifacts/autoclicker-linux-x86_64/autoclicker" ./release-files/autoclicker-linux-x86_64
+          fi
           
           # Make Linux/macOS binaries executable
-          chmod +x ./release-files/autoclicker-* || true
+          chmod +x ./release-files/autoclicker-macos-* ./release-files/autoclicker-linux-* 2>/dev/null || true
           
           echo "=== Release files prepared ==="
           ls -lh ./release-files/
           
-          # Verify files exist
-          if [ ! -f "./release-files/autoclicker-windows-x86_64.exe" ]; then
-            echo "ERROR: Windows executable not found!"
+          # Verify we have 4 files (count executables)
+          file_count=$(find ./release-files -type f | wc -l)
+          if [ "$file_count" -lt 4 ]; then
+            echo "ERROR: Expected 4 executables, found $file_count"
             exit 1
           fi
-          if [ ! -f "./release-files/autoclicker-macos-x86_64" ]; then
-            echo "ERROR: macOS Intel executable not found!"
-            exit 1
-          fi
-          if [ ! -f "./release-files/autoclicker-macos-aarch64" ]; then
-            echo "ERROR: macOS ARM executable not found!"
-            exit 1
-          fi
-          if [ ! -f "./release-files/autoclicker-linux-x86_64" ]; then
-            echo "ERROR: Linux executable not found!"
-            exit 1
-          fi
-          echo "All executables found and ready!"
+          echo "All $file_count executables found and ready!"
 
       - name: Get tag name
         id: tag
