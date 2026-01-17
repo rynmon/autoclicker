@@ -1,8 +1,9 @@
 use image::{ImageBuffer, Rgba, ImageFormat};
 
 fn main() {
-    // Only run on Windows
-    if std::env::var("CARGO_CFG_TARGET_OS").unwrap() == "windows" {
+    // Only run on Windows for icon generation
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    if target_os == "windows" {
         // Create a simple icon: circular button with mouse cursor
         let size = 256u32;
         let mut img = ImageBuffer::<Rgba<u8>, Vec<u8>>::new(size, size);
