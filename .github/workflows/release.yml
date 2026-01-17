@@ -75,6 +75,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout code
@@ -84,6 +86,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
+          pattern: '*'
+          merge-multiple: false
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Artifacts directory contents:"
+          ls -la ./artifacts/ || echo "Artifacts directory not found"
+          find ./artifacts -type f || echo "No files found"
 
       - name: Get tag name
         id: tag
@@ -92,7 +102,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifacts/*
+          files: |
+            ./artifacts/autoclicker-windows-x86_64.exe/autoclicker-windows-x86_64.exe
+            ./artifacts/autoclicker-macos-x86_64/autoclicker-macos-x86_64
+            ./artifacts/autoclicker-macos-aarch64/autoclicker-macos-aarch64
+            ./artifacts/autoclicker-linux-x86_64/autoclicker-linux-x86_64
           name: Release ${{ steps.tag.outputs.TAG_NAME }}
           body: |
             ## Features
